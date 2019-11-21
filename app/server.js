@@ -36,19 +36,26 @@ app.use('/js', express.static(__dirname + '/public/js'));
 
 app.get('/wr-paths', function (req, res) {
     //var query="MATCH (w:NICEWorkrole) RETURN w.title LIMIT {limit}"
-    var query = `MATCH (w1:NICEWorkrole)<-[:NICE_WORKROLE]-(k:KSAT)-[:NICE_WORKROLE]->(w2:NICEWorkrole)
+    var query = `MATCH (c:NICECategory)--(sa:NICESpecialtyArea)--(w1:NICEWorkrole)<-[:NICE_WORKROLE]-(k:KSAT)-[:NICE_WORKROLE]->(w2:NICEWorkrole)
     WHERE NOT k.id IN ['K0001', 'K0002', 'K0003', 'K0004', 'K0005', 'K0006']
-    RETURN w1.title, collect(w2.title)`
+    RETURN c.id, sa.id, w1.title, collect(w2.title)`
     var params={}
     var cb=function(err, data) {
         if (err) {
             res.status(500).send(err);
         } else {
             data = data['results'][0]['data'].map(x => {
-            return({ title: x['row'][0], related: x['row'][1]});
+                return({
+                    category: x['row'][0],
+                    specialtyarea: x['row'][1],
+                    title: x['row'][2],
+                    related: x['row'][3]
+                });
             });
 
-            console.debug(JSON.stringify(data));
+            if (process.env.DEBUG) {
+                console.debug(JSON.stringify(data));
+            }
             res.send(data);
         }
     }

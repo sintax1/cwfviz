@@ -5,6 +5,13 @@ var r1 = 960 / 2,
 
 var fill = d3.scale.category20c();
 
+function colorscale(color) {
+  color2 = d3.hsl(color).darker(10);
+  return d3.scale.linear()
+  .domain([1, 20])
+  .range([color, color2]);
+}
+
 var chord = d3.layout.chord()
     .padding(.04)
     .sortSubgroups(d3.descending)
@@ -15,11 +22,58 @@ var arc = d3.svg.arc()
     .outerRadius(r0 + 20);
 
 var svg = d3.select("body").append("svg")
-    .attr("width", r1 * 2)
-    .attr("height", r1 * 2)
+    .attr("width", r1 * 2 + 40)
+    .attr("height", r1 * 2 + 40)
   .append("g")
     .attr("transform", "translate(" + r1 + "," + r1 + ")");
 
+/** Text wrap */
+function wrap(text, width) {
+  text.each(function () {
+      var text = d3.select(this),
+          words = text.text().split(/\s+/).reverse(),
+          word,
+          line = [],
+          lineNumber = 0,
+          lineHeight = 1.1, // ems
+          x = 0,
+          y = text.attr("y"),
+          dy = 0, //parseFloat(text.attr("dy")),
+          tspan = text.text(null)
+                      .append("tspan")
+                      .attr("x", x)
+                      .attr("y", y)
+                      .attr("dy", dy + "em");
+      while (word = words.pop()) {
+          line.push(word);
+          tspan.text(line.join(" "));
+          if (tspan.node().getComputedTextLength() > width) {
+              line.pop();
+              tspan.text(line.join(" "));
+              line = [word];
+              tspan = text.append("tspan")
+                          .attr("x", x)
+                          .attr("y", y)
+                          .attr("dy", function() { return lineHeight + dy + "em"; })
+                          .text(word);
+          }
+      }
+  });
+}
+
+var category_colors = {
+  SP: '#eb4034',
+  OM: '#00a87e',
+  OV: '#2677e0',
+  PR: '#e02692',
+  AN: '#cc780a',
+  CO: '#029600',
+  IN: '#945dc7'
+}
+
+function categoryToColor(cat) {
+  return category_colors[cat];
+}
 /** Returns an event handler for fading a given chord group. */
 function fade(opacity) {
   return function(g, i) {
@@ -33,33 +87,35 @@ function fade(opacity) {
 }
   
 function draw(paths) {
-  var indexByName = {},
-      nameByIndex = {},
+  var indexByTitle = {},
+      titleByIndex = {},
+      catByIndex = {},
       matrix = [],
       n = 0;
 
-  function title(title) {
-    return title
+  function toStr(str) {
+    return str
   }
 
-  // Compute a unique index for each name.
+  // Compute a unique index for each workrole
   paths.forEach(function(wr) {
-    wr = title(wr.title);
-    if (!(wr in indexByName)) {
-      nameByIndex[n] = wr;
-      indexByName[wr] = n++;
+    title = toStr(wr.title);
+    if (!(title in indexByTitle)) {
+      titleByIndex[n] = title;
+      catByIndex[n] = toStr(wr.category);
+      indexByTitle[title] = n++;
     }
   });
 
   // Construct a square matrix counting relationships.
   paths.forEach(function(wr) {
-    var source = indexByName[title(wr.title)],
+    var source = indexByTitle[toStr(wr.title)],
         row = matrix[source];
     if (!row) {
      row = matrix[source] = [];
      for (var i = -1; ++i < n;) row[i] = 0;
     }
-    wr.related.forEach(function(wr) { row[indexByName[title(wr)]]++; });
+    wr.related.forEach(function(wr) { row[indexByTitle[toStr(wr)]]++; });
   });
 
   chord.matrix(matrix);
@@ -70,13 +126,12 @@ function draw(paths) {
       .attr("class", "group");
 
   g.append("path")
-      .style("fill", function(d) { return fill(d.index); })
-      .style("stroke", function(d) { return fill(d.index); })
+      .style("fill", function(d) { return categoryToColor(catByIndex[d.index]); })
+      .style("stroke", function(d) { return categoryToColor(catByIndex[d.index]); })
       .attr("d", arc)
       .on("mouseover", fade(0))
       .on("mouseout", fade(1));
       
-  
   g.append("text")
       .each(function(d) { d.angle = (d.startAngle + d.endAngle) / 2; })
       .attr("dy", ".35em")
@@ -86,16 +141,16 @@ function draw(paths) {
             + "translate(" + (r0 + 26) + ")"
             + (d.angle > Math.PI ? "rotate(180)" : "");
       })
-      .text(function(d) { return nameByIndex[d.index]; });
+      .text(function(d) { return titleByIndex[d.index]; })
+      .call(wrap, 120);
 
   svg.selectAll("path.chord")
       .data(chord.chords)
     .enter().append("path")
       .attr("class", "chord")
-      .style("stroke", function(d) { return d3.rgb(fill(d.source.index)).darker(); })
-      .style("fill", function(d) { return fill(d.source.index); })
+      .style("stroke", function(d) { return d3.rgb(categoryToColor(catByIndex[d.source.index])).darker(); }) //colorscale(categoryToColor(catByIndex[d.index]))[d.index];
+      .style("fill", function(d) { return categoryToColor(catByIndex[d.source.index]); })
       .attr("d", d3.svg.chord().radius(r0));
-
 }
 
 d3.json("wr-paths", draw);

@@ -8,11 +8,12 @@ services:
     environment:
       - NEO4J_AUTH=${NEO4J_USER}/${NEO4J_PASS}
 
-  cwfparser:
-    image: sintax/cwfparser
+  cwf2neo:
+    image: sintax/cwf2neo
     environment:
       - NEO4J_HOST
       - NEO4J_HTTP_PORT
+      - NEO4J_BOLT_PORT
       - NEO4J_USER
       - NEO4J_PASS
     command: ["./wait-for-it.sh", "${NEO4J_HOST}:${NEO4J_HTTP_PORT}", "--", "python", "app.py"]
@@ -22,8 +23,8 @@ services:
     user: "node"
     working_dir: /home/node/app
     environment:
-      - NODE_ENV=production
-      #- DEBUG=express:* # For debugging
+      - NODE_ENV
+      - DEBUG
       - NEO4J_HOST
       - NEO4J_HTTP_PORT
       - NEO4J_USER
