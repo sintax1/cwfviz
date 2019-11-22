@@ -4,7 +4,7 @@ COPY ./app /home/node/app
 
 WORKDIR /home/node/app
 
-RUN npm install -g
+RUN npm install -g package.json
 
 USER node
 
