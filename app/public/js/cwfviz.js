@@ -34,11 +34,10 @@ function wrap(text, width) {
           words = text.text().split(/\s+/).reverse(),
           word,
           line = [],
-          lineNumber = 0,
           lineHeight = 1.1, // ems
           x = 0,
           y = text.attr("y"),
-          dy = 0, //parseFloat(text.attr("dy")),
+          dy = 0,
           tspan = text.text(null)
                       .append("tspan")
                       .attr("x", x)
@@ -148,7 +147,7 @@ function draw(paths) {
       .data(chord.chords)
     .enter().append("path")
       .attr("class", "chord")
-      .style("stroke", function(d) { return d3.rgb(categoryToColor(catByIndex[d.source.index])).darker(); }) //colorscale(categoryToColor(catByIndex[d.index]))[d.index];
+      .style("stroke", function(d) { return d3.rgb(categoryToColor(catByIndex[d.source.index])).darker(); })
       .style("fill", function(d) { return categoryToColor(catByIndex[d.source.index]); })
       .attr("d", d3.svg.chord().radius(r0));
 }
