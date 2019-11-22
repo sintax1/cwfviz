@@ -38,7 +38,7 @@ app.get('/wr-paths', function (req, res) {
     // The Cypher query used to gather the workrole relationships. Filtering out the 6 KSAs that are common across all 52 WRs.
     var query = `MATCH (c:NICECategory)--(sa:NICESpecialtyArea)--(w1:NICEWorkrole)<-[:NICE_WORKROLE]-(k:KSAT)-[:NICE_WORKROLE]->(w2:NICEWorkrole)
     WHERE NOT k.id IN ['K0001', 'K0002', 'K0003', 'K0004', 'K0005', 'K0006']
-    RETURN c.id, sa.id, w1.title, collect(w2.title)`
+    RETURN c.id, sa.id, w1.title, collect(w2.title) ORDER BY c.id`
     var params={}
     var cb=function(err, data) {
         if (err) {
