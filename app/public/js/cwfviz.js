@@ -1,4 +1,4 @@
-/* Credit: https://maxdemarzi.com/2012/02/02/graph-visualization-and-neo4j-part-three/ */
+/* Based on Max's work here: https://maxdemarzi.com/2012/02/02/graph-visualization-and-neo4j-part-three/ */
 
 var r1 = 960 / 2,
     r0 = r1 - 120;
