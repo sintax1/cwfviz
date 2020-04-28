@@ -21,7 +21,6 @@ services:
   cwfviz:
     build: .
     user: "node"
-    working_dir: /home/node/app
     environment:
       - NODE_ENV
       - DEBUG
@@ -29,10 +28,6 @@ services:
       - NEO4J_HTTP_PORT
       - NEO4J_USER
       - NEO4J_PASS
-    volumes:
-      - ./app:/home/node/app
     ports:
       - "8080:8080"
-    expose:
-      - "8080"
     command: ["./wait-for-it.sh", "${NEO4J_HOST}:${NEO4J_HTTP_PORT}", "--", "npm", "start"]

@@ -1,12 +1,13 @@
 FROM node:10
 
-COPY ./app /home/node/app
+WORKDIR /home/node/
 
-WORKDIR /home/node/app
+COPY package.json ./
+COPY package-lock.json ./
 
-RUN npm install -g package.json
+RUN npm install
 
-USER node
+COPY ./app ./
 
 EXPOSE 8080
 
